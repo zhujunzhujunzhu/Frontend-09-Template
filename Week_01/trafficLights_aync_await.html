@@ -1,0 +1,85 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-02-24 11:19:08
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-02-24 15:16:33
+-->
+<div class="traffic-lights-wrapper">
+  <div class="traffic-light" data-type="green"></div>
+  <div class="traffic-light" data-type="yellow"></div>
+  <div class="traffic-light" data-type="red"></div>
+</div>
+<script>
+  const trafficTime = {
+    red: 10000,
+    green: 15000,
+    yellow: 5000,
+  };
+
+  // 重置红绿灯
+  function reset() {
+    const eles = document.querySelectorAll(".traffic-light");
+    for (let i = 0; i < eles.length; i++) {
+      let ele = eles[i];
+      ele.style.backgroundColor = null;
+      ele.innerText = null;
+    }
+  }
+
+  function sleepAndChange(type, time) {
+    setLight(type, time);
+    return new Promise((resolve, reject) => {
+      let count = 0;
+      let timer = setInterval(() => {
+        count++;
+        setLight(type, time - count * 1000);
+        if (count * 1000 === time) {
+          resolve();
+          clearInterval(timer);
+        }
+      }, 1000);
+    });
+  }
+
+  // 设置灯
+  function setLight(type, time) {
+    reset();
+    const eles = document.querySelectorAll(".traffic-light");
+    let ele = null;
+    for (let i = 0; i < eles.length; i++) {
+      if (eles[i].dataset.type === type) {
+        ele = eles[i];
+        break;
+      }
+    }
+    ele.style.backgroundColor = type;
+    ele.innerText = time / 1000;
+  }
+
+  async function main() {
+    const eles = document.querySelectorAll(".traffic-light");
+    while (true) {
+      for (let i = 0; i < eles.length; i++) {
+        const type = eles[i].dataset.type;
+        await sleepAndChange(type, trafficTime[type]);
+      }
+    }
+  }
+  main();
+</script>
+<style>
+  .traffic-lights-wrapper {
+    margin: 100px;
+  }
+  .traffic-light {
+    width: 100px;
+    height: 100px;
+    line-height: 100px;
+    text-align: center;
+    border: 1px #ccc solid;
+    font-size: 25px;
+    background: #9a8c8c;
+    color: #fff;
+  }
+</style>

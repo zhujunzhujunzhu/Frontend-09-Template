@@ -1,0 +1,32 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-02-25 12:54:08
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-02-26 17:43:20
+-->
+
+<script>
+  // 利用generator 模拟实现async/await
+  function co(gen) {
+    const g = gen();
+    next(g);
+  }
+  function next(g) {
+    let value;
+    let done = false;
+    while (!done) {
+      let obj = g.next();
+      obj.value &&
+        obj.value.then((res) => {
+          console.log(res);
+        });
+      done = obj.done;
+    }
+  }
+  co(function* fn() {
+    yield Promise.resolve(1);
+    yield Promise.resolve(2);
+    yield Promise.resolve(3);
+  });
+</script>

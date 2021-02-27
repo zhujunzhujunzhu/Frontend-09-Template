@@ -1,0 +1,106 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-02-24 11:19:08
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-02-24 15:18:37
+-->
+<div class="traffic-lights-wrapper">
+  <div class="traffic-light" data-type="green"></div>
+  <div class="traffic-light" data-type="yellow"></div>
+  <div class="traffic-light" data-type="red"></div>
+</div>
+<script>
+  const trafficTime = {
+    red: 10000,
+    green: 15000,
+    yellow: 5000,
+  };
+
+  // 重置红绿灯
+  function reset() {
+    const eles = document.querySelectorAll(".traffic-light");
+    for (let i = 0; i < eles.length; i++) {
+      let ele = eles[i];
+      ele.style.backgroundColor = null;
+      ele.innerText = null;
+    }
+  }
+
+  // 自定义计时器  可以返回剩余时间
+  function myTimer(cb, time, everyCb) {
+    let count = 0;
+    let totalCount = time / 1000;
+    let timer = setInterval(() => {
+      ++count;
+      everyCb && everyCb((totalCount - count) * 1000);
+      if (totalCount === count) {
+        clearInterval(timer);
+        cb && cb((totalCount - count) * 1000);
+      }
+    }, 1000);
+  }
+
+  // 设置灯
+  function setLight(type, time) {
+    reset();
+    const eles = document.querySelectorAll(".traffic-light");
+    let ele = null;
+    for (let i = 0; i < eles.length; i++) {
+      if (eles[i].dataset.type === type) {
+        ele = eles[i];
+        break;
+      }
+    }
+    ele.style.backgroundColor = type;
+    ele.innerText = time / 1000;
+  }
+
+  function main() {
+    const eles = document.querySelectorAll(".traffic-light");
+    setLight("green", trafficTime["green"]);
+    myTimer(
+      () => {
+        setLight("yellow", trafficTime["yellow"]);
+        myTimer(
+          () => {
+            setLight("red", trafficTime["red"]);
+            myTimer(
+              () => {
+                main(); // 递归执行
+              },
+              trafficTime["red"],
+              (time) => {
+                setLight("red", time);
+              }
+            );
+          },
+          trafficTime["yellow"],
+          (time) => {
+            setLight("yellow", time);
+          }
+        );
+      },
+      trafficTime["green"],
+      (time) => {
+        setLight("green", time);
+      }
+    );
+  }
+  main();
+</script>
+<style>
+  .traffic-lights-wrapper {
+    margin: 100px;
+  }
+  .traffic-light {
+    width: 100px;
+    height: 100px;
+    line-height: 100px;
+    text-align: center;
+    border: 1px #ccc solid;
+    font-size: 25px;
+    background: #9a8c8c;
+    color: #fff;
+  }
+</style>

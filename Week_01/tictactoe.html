@@ -1,0 +1,147 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-02-24 11:14:00
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-02-27 10:54:03
+-->
+<style>
+  hr {
+    border: 0 none;
+    padding: 0;
+    margin: 0;
+  }
+  .cell {
+    display: inline-block;
+    height: 80px;
+    width: 80px;
+    text-align: center;
+    line-height: 80px;
+    border: 1px #cecece solid;
+    border-top: 0;
+    border-left: 0;
+    vertical-align: middle;
+    font-size: 30px;
+    cursor: pointer;
+    user-select: none;
+  }
+  #board {
+    border: 1px #cecece solid;
+    border-right: 0;
+    border-bottom: 0;
+    display: inline-block;
+    margin: 200px 400px;
+  }
+</style>
+<div id="board"></div>
+<script>
+  let pattern = [
+    [2, 1, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+  ];
+  let color = 1;
+  // 显示棋盘  棋子
+  function show() {
+    let board = document.getElementById("board");
+    board.innerHTML = "";
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        let cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.innerText =
+          pattern[j][i] === 2 ? "❌" : pattern[j][i] === 1 ? "Ⓘ" : "";
+        // 只有当格子没有棋子时才可以落子
+        if (pattern[j][i] === 0) {
+          cell.addEventListener("click", () => {
+            move(j, i);
+          });
+        }
+
+        board.appendChild(cell);
+      }
+      board.appendChild(document.createElement("hr"));
+    }
+  }
+
+  function move(x, y) {
+    pattern[x][y] = color;
+    if (check(pattern, color)) {
+      alert(color === 2 ? "❌ is winner!" : "Ⓘ is winner!");
+    }
+    color = 3 - color;
+    show();
+    if (willWin(pattern, color)) {
+      alert(color === 2 ? "❌ will Win!" : "Ⓘ will Win!");
+    }
+  }
+
+  // 判断胜负
+  function check(pattern, color) {
+    // 三纵
+    for (let i = 0; i < 3; i++) {
+      let win = true;
+      for (let j = 0; j < 3; j++) {
+        if (pattern[i][j] !== color) {
+          win = false;
+        }
+      }
+      if (win) return true;
+    }
+
+    //  三横
+    for (let i = 0; i < 3; i++) {
+      let win = true;
+      for (let j = 0; j < 3; j++) {
+        if (pattern[j][i] !== color) {
+          win = false;
+        }
+      }
+      if (win) return true;
+    }
+
+    // 左斜
+    {
+      let win = true;
+      for (let i = 0; i < 3; i++) {
+        if (pattern[2 - i][i] !== color) {
+          win = false;
+        }
+      }
+      if (win) return true;
+    }
+
+    // 右斜
+    {
+      let win = true;
+      for (let i = 0; i < 3; i++) {
+        if (pattern[i][i] !== color) {
+          win = false;
+        }
+      }
+      if (win) return true;
+    }
+
+    return false;
+  }
+
+  function clone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  // 判断是否将要赢
+  function willWin(pattern, color) {
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (pattern[i][j]) continue;
+        let tmp = clone(pattern);
+        tmp[i][j] = color;
+        if (check(tmp, color)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  show();
+</script>
