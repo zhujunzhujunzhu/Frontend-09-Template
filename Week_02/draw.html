@@ -1,0 +1,80 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-03-01 07:49:05
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-03-02 06:50:37
+-->
+
+<style>
+  #container {
+    display: inline-block;
+    user-select: none;
+  }
+
+  .cell {
+    display: inline-block;
+    background: gray;
+    border-right: 1px solid white;
+    border-bottom: 1px solid white;
+    vertical-align: middle;
+    width: 8px;
+    height: 8px;
+  }
+</style>
+<div id="container"></div>
+<button onclick="localStorage['map']=JSON.stringify(map)">保存</button>
+<!-- 内联onclick能不能执多条语句 可以 -->
+<button onclick="localStorage.removeItem('map');draw();">清空</button>
+
+<script>
+  let map = null; // 将map放入到draw函数中  保存中的map将显示为undefined
+  function draw() {
+    map = localStorage["map"]
+      ? JSON.parse(localStorage["map"])
+      : Array(10000).fill(0);
+    let container = document.getElementById("container");
+
+    for (let y = 0; y < 100; y++) {
+      for (let x = 0; x < 100; x++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        if (map[100 * y + x] === 1) {
+          cell.style.backgroundColor = "black";
+        }
+
+        cell.addEventListener("mousemove", (e) => {
+          console.log(mousedown);
+          if (mousedown) {
+            if (clear) {
+              cell.style.backgroundColor = "";
+              map[100 * y + x] = 0;
+            } else {
+              cell.style.backgroundColor = "black";
+              map[100 * y + x] = 1;
+            }
+          }
+        });
+
+        container.appendChild(cell);
+      }
+      container.appendChild(document.createElement("br"));
+    }
+    let mousedown = false;
+    let clear = false;
+    document.addEventListener("mousedown", (e) => {
+      mousedown = true;
+      console.log(mousedown);
+      clear = e.which === 3;
+    });
+    document.addEventListener("mouseup", (e) => {
+      mousedown = false;
+      console.log("mouseup", mousedown);
+    });
+    document.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+    });
+  }
+
+  draw();
+</script>

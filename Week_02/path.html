@@ -1,0 +1,123 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-03-01 07:49:05
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-03-02 08:04:03
+-->
+<style>
+  #container {
+    display: inline-block;
+    user-select: none;
+  }
+
+  .cell {
+    display: inline-block;
+    background: gray;
+    border-right: 1px solid white;
+    border-bottom: 1px solid white;
+    vertical-align: middle;
+    width: 8px;
+    height: 8px;
+  }
+</style>
+<div id="container"></div>
+<button onclick="localStorage['map']=JSON.stringify(map)">保存</button>
+<!-- 内联onclick能不能执多条语句 可以 -->
+<button onclick="localStorage.removeItem('map');draw();">清空</button>
+
+<script>
+  let map = null; // 将map放入到draw函数中  保存中的map将显示为undefined
+  function draw() {
+    map = localStorage["map"]
+      ? JSON.parse(localStorage["map"])
+      : Array(10000).fill(0);
+    let container = document.getElementById("container");
+
+    for (let y = 0; y < 100; y++) {
+      for (let x = 0; x < 100; x++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        if (map[100 * y + x] === 1) {
+          cell.style.backgroundColor = "black";
+        }
+
+        cell.addEventListener("mousemove", (e) => {
+          console.log(mousedown);
+          if (mousedown) {
+            if (clear) {
+              cell.style.backgroundColor = "";
+              map[100 * y + x] = 0;
+            } else {
+              cell.style.backgroundColor = "black";
+              map[100 * y + x] = 1;
+            }
+          }
+        });
+
+        container.appendChild(cell);
+      }
+      container.appendChild(document.createElement("br"));
+    }
+    let mousedown = false;
+    let clear = false;
+    document.addEventListener("mousedown", (e) => {
+      mousedown = true;
+      console.log(mousedown);
+      clear = e.which === 3;
+    });
+    document.addEventListener("mouseup", (e) => {
+      mousedown = false;
+      console.log("mouseup", mousedown);
+    });
+    document.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+    });
+  }
+
+  draw();
+
+  function sleep(time) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve();
+      }, time);
+    });
+  }
+  // 将下面的 push shift 改为 push pop 会变成一个深度优先搜索
+  async function path(start, end) {
+    var queue = [start];
+    async function insert(x, y) {
+      if (x < 0 || x >= 100 || y < 0 || y >= 100) {
+        return; // 超出边界
+      }
+      if (map[y * 100 + x]) {
+        return; // 当碰到障碍或者已经走过的点
+      }
+      await sleep(10);
+      map[y * 100 + x] = 2; // 标识已经走过的点
+      // 此处因为我有播放br 所以使用children会有问题
+      container.getElementsByClassName("cell")[
+        100 * y + x
+      ].style.backgroundColor = "lightgreen";
+      queue.push([x, y]); // 入队
+    }
+    while (queue.length) {
+      let [x, y] = queue.shift(); // 出队
+      // console.log(x, y);
+      // 上 下 左 右
+      if (x === end[0] && y === end[1]) {
+        console.log("找到最后节点");
+        container.getElementsByClassName("cell")[
+          100 * y + x
+        ].style.backgroundColor = "red";
+        return true;
+      }
+      await insert(x, y + 1);
+      await insert(x, y - 1);
+      await insert(x + 1, y);
+      await insert(x - 1, y);
+    }
+    return false;
+  }
+</script>
