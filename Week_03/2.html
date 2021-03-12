@@ -1,0 +1,44 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-03-09 07:32:52
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-03-09 08:17:32
+-->
+
+<script>
+  let regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+  let dictionary = [
+    "Number",
+    "whitespace",
+    "LineTerminator",
+    "*",
+    "/",
+    "+",
+    "-",
+  ];
+
+  function* tokenize(source) {
+    let result = null;
+    let lastIndex = 0;
+    while (true) {
+      lastIndex = regexp.lastIndex;
+      result = regexp.exec(source);
+      if (!result) break;
+      if (regexp.lastIndex - lastIndex > result[0].length) break; // 为了解决添加非法的字符 比如102x 这种需要直接报错
+
+      let token = { type: null, value: null };
+      for (let i = 1; i <= dictionary.length; i++) {
+        if (result[i]) {
+          token.type = dictionary[i - 1];
+        }
+      }
+      token.value = result[0];
+      yield token;
+    }
+  }
+
+  for (let token of tokenize("1024 + 10 * 25")) {
+    console.log(token);
+  }
+</script>

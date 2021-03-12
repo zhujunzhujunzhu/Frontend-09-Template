@@ -1,0 +1,36 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-03-09 07:32:52
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-03-09 07:53:13
+-->
+
+<script>
+  let regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+  let dictionary = [
+    "Number",
+    "whitespace",
+    "LineTerminator",
+    "*",
+    "/",
+    "+",
+    "-",
+  ];
+
+  function tokenize(source) {
+    let result = null;
+    while (true) {
+      result = regexp.exec(source);
+      if (!result) break;
+      for (let i = 1; i <= dictionary.length; i++) {
+        if (result[i]) {
+          console.log(dictionary[i - 1]);
+        }
+      }
+      console.log(result);
+    }
+  }
+
+  tokenize("100 * 2 + 200 / 4");
+</script>

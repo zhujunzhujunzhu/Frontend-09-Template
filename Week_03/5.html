@@ -1,0 +1,237 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-03-09 07:32:52
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-03-10 16:58:28
+-->
+
+<script>
+  let regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+  let dictionary = [
+    "Number",
+    "Whitespace",
+    "LineTerminator",
+    "*",
+    "/",
+    "+",
+    "-",
+  ];
+
+  /**词法分析阶段
+   * @function tokenize
+   * @param {*} source
+   */
+  function* tokenize(source) {
+    let result = null;
+    let lastIndex = 0;
+    while (true) {
+      lastIndex = regexp.lastIndex;
+      result = regexp.exec(source);
+      if (!result) break;
+      if (regexp.lastIndex - lastIndex > result[0].length) break; // 为了解决添加非法的字符 比如102x 这种需要直接报错
+
+      let token = { type: null, value: null };
+      for (let i = 1; i <= dictionary.length; i++) {
+        if (result[i]) {
+          token.type = dictionary[i - 1];
+        }
+      }
+      token.value = result[0];
+      yield token;
+    }
+
+    yield { type: "EOF" };
+  }
+
+  /**乘除法处理
+   * @function MultiplicativeExpression
+   * @param {*} source
+   */
+  function MultiplicativeExpression(source) {
+    if (source[0].type === "Number") {
+      //处理类型为数值
+      let node = {
+        type: "MultiplicativeExpression",
+        children: [source[0]],
+      };
+      source[0] = node;
+      return MultiplicativeExpression(source);
+    }
+
+    // 乘法
+    if (
+      source[0].type === "MultiplicativeExpression" &&
+      source[1] &&
+      source[1].type === "*"
+    ) {
+      let node = {
+        type: "MultiplicativeExpression",
+        operator: "*",
+        children: [],
+      };
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+
+      source.unshift(node);
+
+      return MultiplicativeExpression(source);
+    }
+
+    // 除法
+    if (
+      source[0].type === "MultiplicativeExpression" &&
+      source[1] &&
+      source[1].type === "/"
+    ) {
+      let node = {
+        type: "MultiplicativeExpression",
+        operator: "/",
+        children: [],
+      };
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+
+      source.unshift(node);
+
+      return MultiplicativeExpression(source);
+    }
+
+    if (source[0].type === "MultiplicativeExpression") {
+      return source[0];
+    }
+
+    return MultiplicativeExpression(source); // 理论上这一步不应该出现
+  }
+
+  /**加减法处理
+   * @function AdditiveExpression
+   * @param {*} source
+   */
+  function AdditiveExpression(source) {
+    if (source[0].type === "MultiplicativeExpression") {
+      // 处理乘法表达式
+      let node = {
+        type: "AdditiveExpression",
+        children: [source[0]],
+      };
+      source[0] = node;
+      return AdditiveExpression(source);
+    }
+
+    if (
+      source[0].type === "AdditiveExpression" &&
+      source[1] &&
+      source[1].type === "+"
+    ) {
+      // 加法处理
+      let node = {
+        type: "AdditiveExpression",
+        operator: "+",
+        children: [],
+      };
+
+      node.children.push(source.shift()); // 先将source中的头两项压入到node.children中
+      node.children.push(source.shift());
+
+      MultiplicativeExpression(source); // 对第三项进行乘法表达式的分析
+      node.children.push(source.shift()); // 对处理后的第三项到node.children中
+      source.unshift(node); // 将新的节点插入到source头
+
+      return AdditiveExpression(source);
+    }
+
+    if (
+      source[0].type === "AdditiveExpression" &&
+      source[1] &&
+      source[1].type === "-"
+    ) {
+      let node = {
+        type: "AdditiveExpression",
+        operator: "-",
+        children: [],
+      };
+
+      node.children.push(source.shift()); // 先将source中的头两项压入到node.children中
+      node.children.push(source.shift());
+
+      MultiplicativeExpression(source); // 对第三项进行乘法表达式的分析
+      node.children.push(source.shift()); // 对处理后的第三项到node.children中
+      source.unshift(node); // 将新的节点插入到source头
+
+      return AdditiveExpression(source);
+    }
+
+    if (source[0].type === "AdditiveExpression") return source[0];
+    MultiplicativeExpression(source); // 一开始不是 乘法表达式 也不是加法表达式时 先利用乘法表达式处理  这里数值也是被当成一个乘法表达式
+    return AdditiveExpression(source);
+  }
+
+  function Expression(tokens) {
+    if (
+      source[0].type === "AdditiveExpression" &&
+      source[1] &&
+      source[1].type === "EOF"
+    ) {
+      let node = {
+        type: "Expression",
+        children: [source.shift(), source.shift()],
+      };
+      source.unshift(node);
+      return node;
+    }
+    AdditiveExpression(source);
+    return Expression(source);
+  }
+
+  /**计算
+   * @function evaluate
+   * @param {*} node
+   */
+  function evaluate(node) {
+    const { type, children } = node;
+    if (type === "Expression") {
+      return evaluate(children[0]);
+    }
+    // 加减处理
+    if (type === "AdditiveExpression") {
+      if (!children[1]) return evaluate(children[0]);
+      if (children[1].type === "+") {
+        return evaluate(children[0]) + evaluate(children[2]);
+      } else {
+        return evaluate(children[0]) - evaluate(children[2]);
+      }
+    }
+    // 乘除处理
+    if (type === "MultiplicativeExpression") {
+      if (!children[1]) return evaluate(children[0]);
+      if (children[1].type === "*") {
+        return evaluate(children[0]) * evaluate(children[2]);
+      } else {
+        return evaluate(children[0]) / evaluate(children[2]);
+      }
+    }
+
+    // 数值处理
+    if (type === "Number") {
+      return Number(node.value);
+    }
+  }
+
+  let source = [];
+
+  async function main(str) {
+    for (let token of tokenize(str)) {
+      if (token.type !== "Whitespace" && token.type !== "LineTerminator") {
+        await source.push(token);
+      }
+    }
+
+    const ast = Expression(source);
+    console.log(evaluate(ast));
+  }
+
+  main("2 +5 + 10 * 25 / 2");
+</script>

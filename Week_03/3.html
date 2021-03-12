@@ -1,0 +1,116 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-03-09 07:32:52
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-03-10 07:51:56
+-->
+
+<script>
+  let regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+  let dictionary = [
+    "Number",
+    "Whitespace",
+    "LineTerminator",
+    "*",
+    "/",
+    "+",
+    "-",
+  ];
+
+  function* tokenize(source) {
+    let result = null;
+    let lastIndex = 0;
+    while (true) {
+      lastIndex = regexp.lastIndex;
+      result = regexp.exec(source);
+      if (!result) break;
+      if (regexp.lastIndex - lastIndex > result[0].length) break; // 为了解决添加非法的字符 比如102x 这种需要直接报错
+
+      let token = { type: null, value: null };
+      for (let i = 1; i <= dictionary.length; i++) {
+        if (result[i]) {
+          token.type = dictionary[i - 1];
+        }
+      }
+      token.value = result[0];
+      yield token;
+    }
+
+    yield { type: "EOF" };
+  }
+
+  function Expression(tokens) {}
+
+  function AdditiveExpression(source) {}
+
+  function MultiplicativeExpression(source) {
+    if (source[0].type === "Number") {
+      //处理类型为数值
+      let node = {
+        type: "MultiplicativeExpression",
+        children: [source[0]],
+      };
+      source[0] = node;
+      return MultiplicativeExpression(source);
+    }
+
+    // 乘法
+    if (
+      source[0].type === "MultiplicativeExpression" &&
+      source[1] &&
+      source[1].type === "*"
+    ) {
+      let node = {
+        type: "MultiplicativeExpression",
+        operator: "*",
+        children: [],
+      };
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+
+      source.unshift(node);
+
+      return MultiplicativeExpression(source);
+    }
+
+    // 除法
+    if (
+      source[0].type === "MultiplicativeExpression" &&
+      source[1] &&
+      source[1].type === "/"
+    ) {
+      let node = {
+        type: "MultiplicativeExpression",
+        operator: "/",
+        children: [],
+      };
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+      node.children.push(source.shift());
+
+      source.unshift(node);
+
+      return MultiplicativeExpression(source);
+    }
+
+    if (source[0].type === "MultiplicativeExpression") {
+      return source[0];
+    }
+
+    return MultiplicativeExpression(source); // 理论上这一步不应该出现
+  }
+  let source = [];
+
+  async function main() {
+    for (let token of tokenize(" 10 * 25 / 2")) {
+      if (token.type !== "Whitespace" && token.type !== "LineTerminator") {
+        await source.push(token);
+      }
+    }
+    console.log(MultiplicativeExpression(source));
+  }
+
+  main();
+</script>
