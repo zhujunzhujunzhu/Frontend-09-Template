@@ -1,0 +1,89 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-03-15 08:05:23
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-03-17 07:52:23
+-->
+<script>
+  let $ = Symbol("$");
+  class Trie {
+    constructor() {
+      this.root = Object.create(null);
+    }
+    insert(word) {
+      let node = this.root;
+      for (let c of word) {
+        if (!node[c]) {
+          node[c] = Object.create(null);
+        }
+        node = node[c];
+      }
+      if (!($ in node)) {
+        node[$] = 0;
+      }
+      node[$]++;
+    }
+
+    most() {
+      let max = 0;
+      let maxWord = null;
+      let visit = (node, word) => {
+        if (node[$] && node[$] > max) {
+          max = node[$];
+          maxWord = word;
+        }
+        for (let p in node) {
+          visit(node[p], word + p);
+        }
+      };
+      visit(this.root, "");
+      console.log(maxWord, max);
+    }
+
+    // 找出只出现一次的单词
+    findOne() {
+      let min = 1;
+      let oneWords = [];
+
+      const visit = (node, word) => {
+        if (node[$] && node[$] === 1) {
+          oneWords.push(word);
+        }
+        for (let key in node) {
+          visit(node[key], word + key);
+        }
+      };
+      visit(this.root, "");
+      console.log(oneWords);
+    }
+    // 根据出现次数来找字典树中的单词
+    findByCount(num) {
+      let words = [];
+
+      const visit = (node, word) => {
+        if (node[$] && node[$] === num) {
+          words.push(word);
+        }
+        for (let key in node) {
+          visit(node[key], word + key);
+        }
+      };
+      visit(this.root, "");
+      console.log(words);
+    }
+  }
+
+  function randomWord(length) {
+    let s = "";
+    for (let i = 0; i < length; i++) {
+      s += String.fromCharCode(Math.random() * 26 + "a".charCodeAt(0));
+    }
+    return s;
+  }
+
+  let trie = new Trie();
+  for (let i = 0; i < 1000000; i++) {
+    trie.insert(randomWord(4));
+  }
+</script>
