@@ -1,0 +1,101 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-03-28 11:56:34
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-03-28 12:24:49
+-->
+<div id="container">
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+  文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+</div>
+<div
+  id="dragable"
+  style="display: inline-block; width: 100px; height: 100px; background: pink"
+></div>
+<script>
+  let dragable = document.getElementById("dragable");
+  let baseX = 0,
+    baseY = 0;
+  dragable.addEventListener("mousedown", function (event) {
+    let startX = event.clientX,
+      startY = event.clientY;
+    const up = (event) => {
+      baseX = baseX + event.clientX - startX;
+      baseY = baseY + event.clientY - startY;
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+    };
+    const move = (event) => {
+      let range = getNearest(
+        baseX + event.clientX - startX,
+        baseY + event.clientY - startY
+      );
+      range.insertNode(dragable); // 这里插入 如果dom元素中已经是存在的 会插入之后 自动移除
+    };
+    document.addEventListener("mouseup", up);
+    document.addEventListener("mousemove", move);
+  });
+
+  // 这里有一个基本的前提  就是这些文字是没有分节点的 先将空隙的位置先找出来
+  // CssRom api
+
+  let ranges = [];
+  let container = document.getElementById("container");
+  for (
+    let index = 0;
+    index < container.childNodes[0].textContent.length;
+    index++
+  ) {
+    let range = document.createRange();
+    range.setStart(container.childNodes[0], index);
+    range.setEnd(container.childNodes[0], index);
+
+    console.log(range.getBoundingClientRect());
+    ranges.push(range);
+  }
+
+  // 找到最近的range
+  function getNearest(x, y) {
+    let min = Infinity;
+    let nearest = null;
+    for (let range of ranges) {
+      let rect = range.getBoundingClientRect(); // CSSOM 它可能会发生变化
+      let distance = (rect.x - x) ** 2 + (rect.y - y) ** 2; // 这里仅仅是比较大小 就不开根号了
+      if (distance < min) {
+        nearest = range;
+        min = distance;
+      }
+    }
+
+    return nearest;
+  }
+
+  document.addEventListener("selectstart", (event) => {
+    event.preventDefault();
+  });
+</script>

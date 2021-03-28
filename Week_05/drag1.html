@@ -1,0 +1,38 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-03-28 11:15:35
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-03-28 11:55:57
+-->
+<div id="dragable" style="width: 100px; height: 100px; background: pink"></div>
+<script>
+  let dragable = document.getElementById("dragable");
+  // 使用drag事件做不到  需要使用 mousedown mouseup mousemove来实现
+  // mousedown 是在dragable上监听   而mouseup 与mousemove上是document上监听
+  // 在document上监听 会有一个捕获的效果  就是当移出了浏览器也是可以进行的
+  let baseX = 0,
+    baseY = 0;
+  dragable.addEventListener("mousedown", function (event) {
+    let startX = event.clientX,
+      startY = event.clientY;
+    const up = (event) => {
+      baseX = baseX + event.clientX - startX;
+      baseY = baseY + event.clientY - startY;
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+    };
+    // 让它动起来 可以改变transform   这里是代表当前鼠标的移动的位置
+    // 这个比我之前写的要强大很多的  我之前采用的方式是 position的方式去进行的
+    // 这里需要解决的clientX clientY代表的是什么
+    //  1 处理中间点问题   2 处理第二次拖动的问题 需要将之前的已经有的偏移作为全局的变量 保存下来  下次操作的时候需要是加上去的
+    const move = (event) => {
+      console.log(event);
+      dragable.style.transform = `translate(${
+        baseX + event.clientX - startX
+      }px,${baseY + event.clientY - startY}px)`;
+    };
+    document.addEventListener("mouseup", up);
+    document.addEventListener("mousemove", move);
+  });
+</script>
