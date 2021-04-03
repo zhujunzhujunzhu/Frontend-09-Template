@@ -43,20 +43,31 @@ BNF
 
 练习：编写带括号的四则运算
 ```
+<Number> ::= "0"|"1"|"2"|...|"9"
+<DecimalNumber> ::="0"|(("1"|"2"|...|"9")<Number>*)
+<PrimaryExpression> ::= <DecialNumber> | "("<AdditionExpression>")"
+<MultiplicativeExpression>::= <PrimaryExpression>|
+            <MultiplicativeExpression> '*' <PrimaryExpression>|
+            <MultiplicativeExpression> '/' <PrimaryExpression>
 
+<AddtiveExpression>::=<MultiplicativeExpression>|
+            <AddtiveExpression> '+' <MultiplicativeExpression>|
+            <AddtiveExpression> '-' <MultiplicativeExpression>
 ```
 # js语言通识|深入理解产生式
 利用产生式理解乔姆斯基谱系
 
+
+```
 0 型 
 ? ::= ?
 1 型  上下文有关文法
-?<A>? ::= ?<B>?
+?<A>?:: = ?<B>?
 2 型  左边只有一个非终结符
 <A> ::= ?
 3 型 正则文法
 <A> ::= <A>?
-
+```
 
 js是什么样的文法？
 总体上属于上下无关文法
@@ -187,7 +198,7 @@ UTF8  UTF16
 
 ```
 function UTF8_Encoding(string){
-  // return new Buffter()
+  return eval('\''+encodeURI(str).replace(/%/gm, '\\x')+'\'');
 }
 ```
 语法  Grammar
@@ -198,7 +209,7 @@ function UTF8_Encoding(string){
 bfnrtv 
 2028 2029  换行
 
-`ab${x}abc${y}abc` 产生了四种token  `  `  ${   }   
+`ab${x}abc${y}abc` 产生了四种token  \`  \`  ${   }   
 
 
 # js类型 | 其它类型
