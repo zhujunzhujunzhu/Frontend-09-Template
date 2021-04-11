@@ -1,0 +1,176 @@
+<!--
+ * @Description 
+ * @Autor 朱俊
+ * @Date 2021-04-11 14:32:30
+ * @LastEditors 朱俊
+ * @LastEditTime 2021-04-11 14:57:34
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>紧凑树</title>
+    <style>::-webkit-scrollbar{display:none;}html,body{overflow:hidden;margin:0;}
+    html,body,#mountNode{
+      width:100%;
+      height:100%;
+    }
+    
+    </style>
+</head>
+<body>
+<div id="mountNode"></div>
+<script>/*Fixing iframe window.innerHeight 0 issue in Safari*/document.body.clientHeight;</script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.1.1/build/g6.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/assets/lib/jquery-3.2.1.min.js"></script>
+<script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.hierarchy-0.5.0/build/hierarchy.js"></script>
+<script>
+ function  renderTree(data) {
+    var graph = new G6.TreeGraph({
+      container: 'mountNode',
+      width: window.innerWidth,
+      height: window.innerHeight,
+      pixelRatio: 2,
+      modes: {
+        default: [{
+          type: 'collapse-expand',
+          onChange: function onChange(item, collapsed) {
+            var data = item.get('model').data;
+            data.collapsed = collapsed;
+            return true;
+          }
+      }, 'drag-canvas', 'zoom-canvas']
+      },
+      defaultNode: {
+        size: 16,
+        anchorPoints: [[0, 0.5], [1, 0.5]],
+        style: {
+          fill: '#40a9ff',
+          stroke: '#096dd9'
+        }
+      },
+      defaultEdge: {
+        shape: 'cubic-horizontal',
+        style: {
+          stroke: '#A3B1BF'
+        }
+      },
+      layout: {
+        type: 'compactBox',
+        direction: 'LR',
+        getId: function getId(d) {
+          return d.id;
+        },
+        getHeight: function getHeight() {
+          return 16;
+        },
+        getWidth: function getWidth() {
+          return 16;
+        },
+        getVGap: function getVGap() {
+          return 10;
+        },
+        getHGap: function getHGap() {
+          return 100;
+        }
+      }
+    });
+
+    graph.node(function(node) {
+      return {
+        size: 26,
+        style: {
+          fill: '#40a9ff',
+          stroke: '#096dd9'
+        },
+        label: node.id,
+        labelCfg: {
+          position: node.children && node.children.length > 0 ? 'left' : 'right'
+        }
+      };
+    });
+    debugger
+    console.log(data)
+    graph.data(data);
+    graph.render();
+    graph.fitView();
+  }
+
+
+  renderTree({
+    id:'Realm',
+    children:[
+      {
+        id:"全局对象",
+        children:[
+          {id:'属性',children:[
+            {id:'Infinity'},
+            {id:'NaN'},
+            {id:'undefined'}
+          ]},
+          {id:'方法',children:[
+            {id:'decodeURI'},
+            {id:'decodeURIComponent'},
+            {id:'encodeURIComponent'},
+            {id:'escape'},
+            {id:'eval_r'},
+            {id:'isFinite'},
+            {id:'isNaN'},
+            {id:'Number'},
+            {id:'parseFloat'},
+            {id:'parseInt'},
+          ]}
+        ]
+      },
+      {
+        id:"Number",
+        children:
+          Object.getOwnPropertyNames(Number).map(item=>{
+            return {id:item}
+          })
+      },
+      {
+        id:"Boolean",
+        children:  Object.getOwnPropertyNames(Boolean).map(item=>{
+            return {id:item}
+        })
+      },
+      {
+        id:"String",
+        children:  Object.getOwnPropertyNames(String).map(item=>{
+            return {id:item}
+        })
+      }, {
+        id:"Array",
+        children:  Object.getOwnPropertyNames(Array).map(item=>{
+            return {id:item}
+        })
+      },
+      {
+        id:"Object",
+        children:  Object.getOwnPropertyNames(Object).map(item=>{
+            return {id:item}
+        })
+      }, {
+        id:"Function",
+        children:  Object.getOwnPropertyNames(Function).map(item=>{
+            return {id:item}
+        })
+      },
+      {
+        id:"Date",
+        children:  Object.getOwnPropertyNames(Date).map(item=>{
+            return {id:item}
+        })
+      }, {
+        id:"Math",
+        children:  Object.getOwnPropertyNames(Math).map(item=>{
+            return {id:item}
+        })
+      }
+    ]
+  })
+</script>
+</body>
+</html>
+
