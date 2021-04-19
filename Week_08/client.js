@@ -3,7 +3,7 @@
  * @Autor 朱俊
  * @Date 2021-04-16 21:48:49
  * @LastEditors 朱俊
- * @LastEditTime 2021-04-18 23:07:20
+ * @LastEditTime 2021-04-19 08:02:34
  */
 
 const net = require('net')
@@ -21,13 +21,14 @@ class Request{
     if(this.headers["Content-Type"] === 'application/json'){
       this.bodyText = JSON.stringify(this.body)
     }else if(this.headers["Content-Type"] === "application/x-www-form-urlencoded"){
-      this.bodyText = Object.keys(this.body).map(key=>`${key}=${encodeURIComponent(this.body[key]).join('&')}`)
+      this.bodyText = Object.keys(this.body).map(key=>`${key}=${encodeURIComponent(this.body[key])}`).join('&')
     }
     this.headers["Content-Length"] = this.bodyText.length
   }
 
   send(connection){
     return new Promise((resolve,reject)=>{
+        console.log(this.toString())
         const parser = new ResponseParser
         if(connection){
           connection.write(this.toString())
@@ -58,10 +59,11 @@ class Request{
 
 
   toString(){
-    return `${this.method}  ${this.path} HTTP/1.1\r
-    ${Object.keys(this.headers).map(key=>`${key}:${this.headers[key]}`).join("\r\n")}\r
-    \r
-    ${this.bodyText}`
+    // 注意this.method 与  this.path 一定是要有空格的
+    return `${this.method} ${this.path} HTTP/1.1\r
+${Object.keys(this.headers).map(key=>`${key}:${this.headers[key]}`).join("\r\n")}\r
+\r
+${this.bodyText}`
   }
 }
 
@@ -99,8 +101,9 @@ class ResponseParser{
   }
 
   receive(string){
+    console.log(string)
     for(let i=0;i<string.length;i++){
-      this.receive(string.charAt(i))
+      this.receiveChar(string.charAt(i))
     }
   }
   receiveChar(char){
@@ -199,19 +202,20 @@ class TrunkedBodyParser{
 }
 
 void async function  (){
-  let request = new Request({
-    method:'POST',
-    host:'127.0.0.1',
-    port:"8088",
-    headers:{
-      ["X-Foo2"]:"customed"
+  const request = new Request({
+    method: "POST",
+    host: "127.0.0.1",
+    port: "8088",
+    path: "/",
+    headers: {
+      ["X-Foo2"]: "customed"
     },
-    body:{
-      name:'winter'
+    body: {
+      name: "winter"
     }
-  })
-
-  let response  =await request.send()
-
-  console.log(response)
+  });
+  const response = await request.send();
+  console.log(response);
 }()
+
+
