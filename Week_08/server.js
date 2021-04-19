@@ -3,9 +3,10 @@
  * @Autor 朱俊
  * @Date 2021-04-18 21:32:23
  * @LastEditors 朱俊
- * @LastEditTime 2021-04-18 21:40:47
+ * @LastEditTime 2021-04-19 07:52:47
  */
 
+// const http = require('http')
 const http = require('http')
 
 http.createServer((request,response)=>{
@@ -13,7 +14,8 @@ http.createServer((request,response)=>{
   request.on('error',err=>{
     console.log(err)
   }).on('data',chunk=>{
-    body.push(chunk.toString())
+    // body.push(chunk.toString())
+    body.push(chunk)
   }).on('end',()=>{
     body = Buffer.concat(body).toString()
     console.log("body:",body)
@@ -23,3 +25,4 @@ http.createServer((request,response)=>{
 }).listen(8088)
 
 console.log("server started")
+
